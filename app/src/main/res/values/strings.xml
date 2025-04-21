@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CryptoWallet</string>
+
+    <!--  Wallet  -->
+    <string name="wallet_top_bar">Wallet</string>
+    <string name="top_up_balance">Top Up Balance</string>
 </resources>
