@@ -12,11 +12,10 @@
 
 ## 🖼️ Screenshots
 
-### Light Theme
-<img src="screenshots/light_theme.png" alt="drawing" width="300"/>
-
-### Dark Theme
-<img src="screenshots/dark_theme.png" alt="drawing" width="300"/>
+<div align="center">
+  <img src="screenshots/light_theme.png" alt="drawing" width="300"/>
+  <img src="screenshots/dark_theme.png" alt="drawing" width="300"/>
+</div>
 
 ---
 
