@@ -13,10 +13,10 @@
 ## 🖼️ Screenshots
 
 ### Light Theme
-![Balance](screenshots/light_theme.png)
+<img src="screenshots/light_theme.png" alt="drawing" width="300"/>
 
 ### Dark Theme
-![Balance](screenshots/dark_theme.png)
+<img src="screenshots/dark_theme.png" alt="drawing" width="300"/>
 
 ---
 
