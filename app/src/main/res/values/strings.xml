@@ -1,7 +1,16 @@
 <resources>
     <string name="app_name">CryptoWallet</string>
 
+    <!--  Error  -->
+    <string name="general_error_message">Something went wrong</string>
+
     <!--  Wallet  -->
     <string name="wallet_top_bar">Wallet</string>
     <string name="top_up_balance">Top Up Balance</string>
+
+    <!--  Top Up Dialog  -->
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="amount">Amount</string>
+    <string name="top_up_validation_error_message">Must be greater than 0\nMust be ≤ 100,000\nMust have no more than 5 decimal places</string>
 </resources>

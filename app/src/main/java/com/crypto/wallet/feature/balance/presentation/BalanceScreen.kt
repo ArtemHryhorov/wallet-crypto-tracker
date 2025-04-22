@@ -30,6 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crypto.wallet.R
+import com.crypto.wallet.feature.balance.presentation.model.BalanceUiModel
+import com.crypto.wallet.feature.balance.presentation.top.up.TopUpDialog
+import com.crypto.wallet.ui.common.TextUiModel
+import com.crypto.wallet.ui.common.string
 import com.crypto.wallet.ui.theme.CryptoWalletTheme
 
 @Composable
@@ -40,6 +44,12 @@ fun BalanceRoute(
   val state by viewModel.state.collectAsStateWithLifecycle()
   BalanceScreen(
     state = state,
+    actions = BalanceActions(
+      onShowTopUpDialogClick = { viewModel.onEvent(BalanceEvent.ShowTopUpDialog) },
+      onTopUpValueChange = { viewModel.onEvent(BalanceEvent.ValidateTopUpValue(it)) },
+      onTopUpConfirm = { viewModel.onEvent(BalanceEvent.TopUpBalance(it)) },
+      onTopUpDismiss = { viewModel.onEvent(BalanceEvent.DismissTopUpDialog) },
+    ),
     modifier = modifier,
   )
 }
@@ -47,9 +57,20 @@ fun BalanceRoute(
 @Composable
 private fun BalanceScreen(
   state: BalanceState,
+  actions: BalanceActions,
   modifier: Modifier = Modifier,
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
+
+  if (state.showTopUpDialog) {
+    TopUpDialog(
+      value = state.topUpDialogValue,
+      isValid = state.isTopUpDialogValueValid,
+      onValueChange = actions.onTopUpValueChange,
+      onConfirm = actions.onTopUpConfirm,
+      onDismiss = actions.onTopUpDismiss,
+    )
+  }
 
   Scaffold(
     modifier = modifier,
@@ -69,6 +90,7 @@ private fun BalanceScreen(
     Surface(color = MaterialTheme.colorScheme.background) {
       BalanceScreenContent(
         state = state,
+        actions = actions,
         modifier = Modifier.padding(paddingValues),
       )
     }
@@ -78,6 +100,7 @@ private fun BalanceScreen(
 @Composable
 private fun BalanceScreenContent(
   state: BalanceState,
+  actions: BalanceActions,
   modifier: Modifier = Modifier,
 ) {
   Column(
@@ -90,6 +113,7 @@ private fun BalanceScreenContent(
     Spacer(modifier = Modifier.height(12.dp))
     UserBalanceCard(
       balance = state.balance,
+      onTopUpClick = actions.onShowTopUpDialogClick,
       modifier = Modifier.fillMaxWidth(),
     )
   }
@@ -109,7 +133,8 @@ private fun ExchangeRate(
 
 @Composable
 private fun UserBalanceCard(
-  balance: String?,
+  balance: BalanceUiModel?,
+  onTopUpClick: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Card(
@@ -129,7 +154,7 @@ private fun UserBalanceCard(
       ) {
         Text(
           modifier = Modifier.fillMaxWidth(),
-          text = balance,
+          text = balance.amount.string(),
           textAlign = TextAlign.Start,
           style = MaterialTheme.typography.displaySmall
         )
@@ -142,7 +167,7 @@ private fun UserBalanceCard(
             modifier = Modifier
               .padding(top = 6.dp)
               .align(Alignment.CenterEnd),
-            onClick = {},
+            onClick = onTopUpClick,
           ) {
             Text(text = stringResource(R.string.top_up_balance))
           }
@@ -170,7 +195,10 @@ private fun UserBalanceCard(
 fun PreviewBalanceScreen() {
   CryptoWalletTheme {
     BalanceScreen(
-      state = BalanceState(balance = "2.53045 BTC"),
+      state = BalanceState.loading.copy(
+        balance = BalanceUiModel(amount = TextUiModel("2.56246 BTC")),
+      ),
+      actions = BalanceActions.Empty,
     )
   }
 }
@@ -180,6 +208,9 @@ fun PreviewBalanceScreen() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun PreviewBalanceScreenLoading() {
   CryptoWalletTheme {
-    BalanceScreen(state = BalanceState.loading)
+    BalanceScreen(
+      state = BalanceState.loading,
+      actions = BalanceActions.Empty,
+    )
   }
 }
