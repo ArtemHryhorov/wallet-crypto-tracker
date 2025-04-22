@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -146,14 +147,15 @@ private fun AddTransactionScreenContent(
   Column(
     modifier = modifier,
   ) {
-    Box(
-      modifier = Modifier.fillMaxWidth(),
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(IntrinsicSize.Max),
     ) {
       OutlinedTextField(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = 24.dp)
-          .align(Alignment.Center),
+          .padding(horizontal = 24.dp),
         value = state.inputValue,
         onValueChange = actions.onValueChange,
         singleLine = true,

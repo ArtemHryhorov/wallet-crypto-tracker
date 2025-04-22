@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.room.paging)
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
 
     ksp(libs.hilt.compiler)
     ksp(libs.room.compiler)

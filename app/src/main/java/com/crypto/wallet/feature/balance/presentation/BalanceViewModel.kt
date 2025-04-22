@@ -3,25 +3,32 @@ package com.crypto.wallet.feature.balance.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
 import com.crypto.wallet.R
 import com.crypto.wallet.core.dispatchers.IoDispatcher
-import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmount
 import com.crypto.wallet.feature.balance.domain.usecase.CreateUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalance
-import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalance
+import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmount
+import com.crypto.wallet.feature.balance.domain.usecase.ChangeBalance
 import com.crypto.wallet.feature.balance.presentation.mapper.toAmountUiModel
 import com.crypto.wallet.feature.transaction.domain.model.CreateTransactionInput
 import com.crypto.wallet.feature.transaction.domain.model.TransactionType
 import com.crypto.wallet.feature.transaction.domain.usecase.AddTransaction
 import com.crypto.wallet.feature.transaction.domain.usecase.GetAllTransactions
-import com.crypto.wallet.feature.transaction.presentation.mapper.toUiModelList
+import com.crypto.wallet.feature.transaction.presentation.mapper.toUiModel
+import com.crypto.wallet.feature.transaction.presentation.model.TransactionUiModel
 import com.crypto.wallet.ui.common.TextUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,19 +38,32 @@ import javax.inject.Inject
 @HiltViewModel
 class BalanceViewModel @Inject constructor(
   @IoDispatcher private val dispatcher: CoroutineDispatcher,
+  getAllTransactions: GetAllTransactions,
   private val getUserBalance: GetUserBalance,
   private val isValidAmount: IsValidAmount,
-  private val topUpBalance: TopUpBalance,
+  private val changeBalance: ChangeBalance,
   private val createUserBalance: CreateUserBalance,
-  private val getAllTransactions: GetAllTransactions,
   private val addTransaction: AddTransaction,
 ) : ViewModel() {
   private val mutableState = MutableStateFlow(BalanceState.loading)
   val state: StateFlow<BalanceState> = mutableState.asStateFlow()
 
+  val pagedTransactions: Flow<PagingData<TransactionUiModel>> =
+    getAllTransactions()
+      .map { result ->
+        result.map { it.toUiModel() }
+      }
+      .catch { error ->
+        Log.e("BalanceViewModel", "pagedTransactions: Failed to load", error)
+        mutableState.update {
+          it.copy(errorMessage = TextUiModel(R.string.general_error_message))
+        }
+        emit(PagingData.empty())
+      }
+      .cachedIn(viewModelScope)
+
   init {
     observeUserBalance()
-    observeUserTransactions()
   }
 
   fun onEvent(event: BalanceEvent) {
@@ -78,29 +98,12 @@ class BalanceViewModel @Inject constructor(
       .launchIn(viewModelScope)
   }
 
-  private fun observeUserTransactions() {
-    getAllTransactions()
-      .onEach { transactionsResult ->
-        transactionsResult.fold(
-          onSuccess = { transactions ->
-            mutableState.update {
-              it.copy(transactions = transactions.toUiModelList())
-            }
-          },
-          onFailure = { error ->
-            Log.e("BalanceViewModel", "observeUserTransactions: Failed to load", error)
-            mutableState.update {
-              it.copy(errorMessage = TextUiModel(R.string.general_error_message))
-            }
-          },
-        )
-      }
-      .launchIn(viewModelScope)
-  }
-
   private fun topUpUserBalance(amount: Double) {
     viewModelScope.launch(dispatcher) {
-      topUpBalance(amount)
+      changeBalance(
+        transactionType = TransactionType.Income,
+        amount = amount,
+      )
         .onSuccess {
           mutableState.update {
             it.copy(showTopUpDialog = false)
