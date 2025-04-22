@@ -1,6 +1,6 @@
 package com.crypto.wallet.feature.transaction.data.repository
 
-import com.crypto.wallet.core.di.IoDispatcher
+import com.crypto.wallet.core.dispatchers.IoDispatcher
 import com.crypto.wallet.feature.transaction.data.dao.TransactionDao
 import com.crypto.wallet.feature.transaction.data.mapper.toDomain
 import com.crypto.wallet.feature.transaction.data.mapper.toEntity

@@ -167,7 +167,7 @@ private fun AddTransactionScreenContent(
           if (!state.isValidInput && state.inputValue.isNotBlank()) {
             Text(
               modifier = Modifier.fillMaxWidth(),
-              text = stringResource(R.string.top_up_validation_error_message),
+              text = stringResource(R.string.transaction_validation_error_message),
               color = MaterialTheme.colorScheme.error,
             )
           }

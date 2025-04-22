@@ -1,6 +1,6 @@
 package com.crypto.wallet.feature.balance.di
 
-import com.crypto.wallet.core.data.AppDatabase
+import com.crypto.wallet.core.database.AppDatabase
 import com.crypto.wallet.feature.balance.data.dao.UserBalanceDao
 import com.crypto.wallet.feature.balance.data.repository.BalanceRepositoryImpl
 import com.crypto.wallet.feature.balance.domain.repository.BalanceRepository
@@ -8,6 +8,8 @@ import com.crypto.wallet.feature.balance.domain.usecase.CreateUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.CreateUserBalanceUseCase
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalanceUseCase
+import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmount
+import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmountUseCase
 import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalance
 import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalanceUseCase
 import dagger.Binds
@@ -33,6 +35,11 @@ interface BalanceModule {
   fun bindCreateUserBalance(
     useCase: CreateUserBalanceUseCase
   ): CreateUserBalance
+
+  @Binds
+  fun bindIsValidAmount(
+    useCase: IsValidAmountUseCase
+  ): IsValidAmount
 
   @Binds
   fun bindBalanceRepository(

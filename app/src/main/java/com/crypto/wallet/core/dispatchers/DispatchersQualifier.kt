@@ -1,4 +1,4 @@
-package com.crypto.wallet.core.di
+package com.crypto.wallet.core.dispatchers
 
 import javax.inject.Qualifier
 

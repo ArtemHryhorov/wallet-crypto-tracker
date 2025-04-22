@@ -1,4 +1,4 @@
-package com.crypto.wallet.core.domain
+package com.crypto.wallet.feature.balance.domain.usecase
 
 import javax.inject.Inject
 
