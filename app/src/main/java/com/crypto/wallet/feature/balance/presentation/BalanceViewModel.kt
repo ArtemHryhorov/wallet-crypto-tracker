@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crypto.wallet.R
-import com.crypto.wallet.core.dispatchers.IoDispatcher
+import com.crypto.wallet.core.di.IoDispatcher
 import com.crypto.wallet.feature.balance.domain.usecase.CreateUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalance
-import com.crypto.wallet.feature.balance.domain.usecase.IsValidTopUpAmount
+import com.crypto.wallet.core.domain.IsValidAmount
 import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalance
 import com.crypto.wallet.feature.balance.presentation.mapper.toAmountUiModel
-import com.crypto.wallet.feature.transaction.domain.usecase.GetTransactions
+import com.crypto.wallet.feature.transaction.domain.usecase.GetAllTransactions
 import com.crypto.wallet.feature.transaction.presentation.mapper.toUiModelList
 import com.crypto.wallet.ui.common.TextUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,10 +28,10 @@ import javax.inject.Inject
 class BalanceViewModel @Inject constructor(
   @IoDispatcher private val dispatcher: CoroutineDispatcher,
   private val getUserBalance: GetUserBalance,
-  private val isValidTopUpAmount: IsValidTopUpAmount,
+  private val isValidAmount: IsValidAmount,
   private val topUpBalance: TopUpBalance,
   private val createUserBalance: CreateUserBalance,
-  private val getTransactions: GetTransactions,
+  private val getAllTransactions: GetAllTransactions,
 ) : ViewModel() {
   private val mutableState = MutableStateFlow(BalanceState.loading)
   val state: StateFlow<BalanceState> = mutableState.asStateFlow()
@@ -61,7 +61,6 @@ class BalanceViewModel @Inject constructor(
           },
           onFailure = { error ->
             Log.e("BalanceViewModel", "observeUserBalance: Failed to load", error)
-            // TODO - Add NoInternetConnection handling
             when (error) {
               is NoSuchElementException -> createUserBalance()
               else -> mutableState.update {
@@ -75,7 +74,7 @@ class BalanceViewModel @Inject constructor(
   }
 
   private fun observeUserTransactions() {
-    getTransactions()
+    getAllTransactions()
       .onEach { transactionsResult ->
         transactionsResult.fold(
           onSuccess = { transactions ->
@@ -129,7 +128,7 @@ class BalanceViewModel @Inject constructor(
   private fun validateTopUpValue(amount: String) {
     mutableState.update {
       it.copy(
-        isTopUpDialogValueValid = isValidTopUpAmount(amount),
+        isTopUpDialogValueValid = isValidAmount(amount),
         topUpDialogValue = amount,
       )
     }

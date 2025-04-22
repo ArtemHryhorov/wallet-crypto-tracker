@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.crypto.wallet.feature.balance.presentation.BalanceRoute
+import com.crypto.wallet.feature.transaction.presentation.AddTransactionRoute
 import com.crypto.wallet.ui.navigation.Destination
 import com.crypto.wallet.ui.theme.Color
 import com.crypto.wallet.ui.theme.CryptoWalletTheme
@@ -46,10 +48,23 @@ class MainActivity : ComponentActivity() {
             startDestination = Destination.Balance,
             modifier = Modifier.fillMaxSize(),
           ) {
-            // TODO - Navigate to Add Transaction
             composable<Destination.Balance> {
               BalanceRoute(
-                onAddTransactionClick = {},
+                onAddTransactionClick = {
+                  navController.navigate(Destination.AddTransaction)
+                },
+              )
+            }
+            composable<Destination.AddTransaction>(
+              enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+              },
+              exitTransition = {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+              },
+            ) {
+              AddTransactionRoute(
+                onNavigateBackClick = { navController.popBackStack() },
               )
             }
           }

@@ -1,4 +1,4 @@
-package com.crypto.wallet.core.dispatchers
+package com.crypto.wallet.core.di
 
 import dagger.Module
 import dagger.Provides

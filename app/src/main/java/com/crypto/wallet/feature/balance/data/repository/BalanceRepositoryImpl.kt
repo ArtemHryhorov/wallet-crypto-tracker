@@ -1,6 +1,6 @@
 package com.crypto.wallet.feature.balance.data.repository
 
-import com.crypto.wallet.core.dispatchers.IoDispatcher
+import com.crypto.wallet.core.di.IoDispatcher
 import com.crypto.wallet.feature.balance.data.dao.UserBalanceDao
 import com.crypto.wallet.feature.balance.data.mapper.toDomain
 import com.crypto.wallet.feature.balance.data.mapper.toEntity
