@@ -8,6 +8,7 @@ data class BalanceState(
   val showTopUpDialog: Boolean,
   val topUpDialogValue: String,
   val isTopUpDialogValueValid: Boolean,
+  val btcRate: String?,
   val errorMessage: TextUiModel?,
 ) {
   companion object {
@@ -16,6 +17,7 @@ data class BalanceState(
       showTopUpDialog = false,
       topUpDialogValue = "",
       isTopUpDialogValueValid = true,
+      btcRate = null,
       errorMessage = null,
     )
   }

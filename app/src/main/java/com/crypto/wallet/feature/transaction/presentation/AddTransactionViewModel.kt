@@ -51,6 +51,7 @@ class AddTransactionViewModel @Inject constructor(
       is AddTransactionEvent.AddTransaction -> performOutcomeTransaction(event.amount)
       is AddTransactionEvent.ValidateInputValue -> validateInputValue(event.value)
       is AddTransactionEvent.ProcessCategoryClick -> processCategoryClick(event.category)
+      AddTransactionEvent.DismissError -> dismissError()
     }
   }
 
@@ -151,6 +152,12 @@ class AddTransactionViewModel @Inject constructor(
   private fun processCategoryClick(category: CategoryUiModel) {
     mutableState.update {
       it.copy(selectedCategory = category)
+    }
+  }
+
+  private fun dismissError() {
+    mutableState.update {
+      it.copy(errorMessage = null)
     }
   }
 }

@@ -22,29 +22,19 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 interface TransactionModule {
   @Binds
-  fun bindGetCategories(
-    useCase: GetCategoriesUseCase
-  ): GetCategories
+  fun bindGetCategories(useCase: GetCategoriesUseCase): GetCategories
 
   @Binds
-  fun bindAddTransaction(
-    useCase: AddTransactionUseCase
-  ): AddTransaction
+  fun bindAddTransaction(useCase: AddTransactionUseCase): AddTransaction
 
   @Binds
-  fun bindGetAllTransactions(
-    useCase: GetAllTransactionsUseCase
-  ): GetAllTransactions
+  fun bindGetAllTransactions(useCase: GetAllTransactionsUseCase): GetAllTransactions
 
   @Binds
-  fun bindIsValidTransaction(
-    useCase: IsValidTransactionUseCase
-  ): IsValidTransaction
+  fun bindIsValidTransaction(useCase: IsValidTransactionUseCase): IsValidTransaction
 
   @Binds
-  fun bindTransactionsRepository(
-    repository: TransactionsRepositoryImpl
-  ): TransactionsRepository
+  fun bindTransactionsRepository(repository: TransactionsRepositoryImpl): TransactionsRepository
 
   companion object TransactionDaoModule {
     @Provides
