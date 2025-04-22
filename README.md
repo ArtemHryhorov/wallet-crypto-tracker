@@ -10,6 +10,16 @@
 
 ---
 
+## 🖼️ Screenshots
+
+### Light Theme
+![Balance](screenshots/light_theme.png)
+
+### Dark Theme
+![Balance](screenshots/dark_theme.png)
+
+---
+
 ## 🚀 Tech Stack
 
 | Layer            | Libraries / Tools                                     |
