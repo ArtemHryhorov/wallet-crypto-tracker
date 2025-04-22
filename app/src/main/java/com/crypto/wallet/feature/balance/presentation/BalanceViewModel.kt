@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crypto.wallet.R
-import com.crypto.wallet.core.di.IoDispatcher
+import com.crypto.wallet.core.dispatchers.IoDispatcher
+import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmount
 import com.crypto.wallet.feature.balance.domain.usecase.CreateUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalance
-import com.crypto.wallet.core.domain.IsValidAmount
 import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalance
 import com.crypto.wallet.feature.balance.presentation.mapper.toAmountUiModel
+import com.crypto.wallet.feature.transaction.domain.model.CreateTransactionInput
+import com.crypto.wallet.feature.transaction.domain.model.TransactionType
+import com.crypto.wallet.feature.transaction.domain.usecase.AddTransaction
 import com.crypto.wallet.feature.transaction.domain.usecase.GetAllTransactions
 import com.crypto.wallet.feature.transaction.presentation.mapper.toUiModelList
 import com.crypto.wallet.ui.common.TextUiModel
@@ -22,6 +25,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,6 +36,7 @@ class BalanceViewModel @Inject constructor(
   private val topUpBalance: TopUpBalance,
   private val createUserBalance: CreateUserBalance,
   private val getAllTransactions: GetAllTransactions,
+  private val addTransaction: AddTransaction,
 ) : ViewModel() {
   private val mutableState = MutableStateFlow(BalanceState.loading)
   val state: StateFlow<BalanceState> = mutableState.asStateFlow()
@@ -84,7 +89,6 @@ class BalanceViewModel @Inject constructor(
           },
           onFailure = { error ->
             Log.e("BalanceViewModel", "observeUserTransactions: Failed to load", error)
-            // TODO - Add NoInternetConnection handling
             mutableState.update {
               it.copy(errorMessage = TextUiModel(R.string.general_error_message))
             }
@@ -101,6 +105,7 @@ class BalanceViewModel @Inject constructor(
           mutableState.update {
             it.copy(showTopUpDialog = false)
           }
+          addTopUpTransaction(amount)
         }
         .onFailure {
           mutableState.update {
@@ -110,6 +115,20 @@ class BalanceViewModel @Inject constructor(
             )
           }
         }
+    }
+  }
+
+  private suspend fun addTopUpTransaction(amount: Double) {
+    val input = CreateTransactionInput(
+      transactionType = TransactionType.Income,
+      creationDate = Instant.now(),
+      amount = amount
+    )
+    addTransaction(input).onFailure { error ->
+      Log.e("BalanceViewModel", "addTopUpTransaction: Failed to load", error)
+      mutableState.update {
+        it.copy(errorMessage = TextUiModel(R.string.general_error_message))
+      }
     }
   }
 
