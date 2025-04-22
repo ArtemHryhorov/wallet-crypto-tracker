@@ -9,8 +9,10 @@
     <string name="top_up_balance">Top Up Balance</string>
     <string name="transactions_history">Transactions History</string>
     <string name="add_transaction">Add Transaction</string>
+    <string name="add">Add</string>
 
     <!--  Transaction  -->
+    <string name="add_transaction_top_bar">Add Transaction</string>
     <string name="income">Income</string>
     <string name="outcome">Outcome</string>
     <string name="category_groceries">Groceries</string>
@@ -18,6 +20,7 @@
     <string name="category_electronics">Electronics</string>
     <string name="category_restaurant">Restaurant</string>
     <string name="category_other">Other</string>
+    <string name="back">Back</string>
 
     <!--  Top Up Dialog  -->
     <string name="confirm">Confirm</string>

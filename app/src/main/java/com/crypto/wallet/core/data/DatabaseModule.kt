@@ -1,4 +1,4 @@
-package com.crypto.wallet.core.database
+package com.crypto.wallet.core.data
 
 import android.content.Context
 import androidx.room.Room
