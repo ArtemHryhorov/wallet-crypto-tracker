@@ -4,12 +4,13 @@
     <!--  Error  -->
     <string name="general_error_message">Something went wrong</string>
 
-    <!--  Wallet  -->
+    <!--  Balance  -->
     <string name="balance_top_bar">Balance</string>
     <string name="top_up_balance">Top Up Balance</string>
     <string name="transactions_history">Transactions History</string>
     <string name="add_transaction">Add Transaction</string>
     <string name="add">Add</string>
+    <string name="btc_rate_error_message">Failed to load BTC to USD rate</string>
 
     <!--  Transaction  -->
     <string name="add_transaction_top_bar">Add Transaction</string>

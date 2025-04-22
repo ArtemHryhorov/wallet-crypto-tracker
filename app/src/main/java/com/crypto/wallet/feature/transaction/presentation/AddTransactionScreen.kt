@@ -76,6 +76,7 @@ fun AddTransactionRoute(
       onValueChange = { viewModel.onEvent(AddTransactionEvent.ValidateInputValue(it)) },
       onCategoryClick = { viewModel.onEvent(AddTransactionEvent.ProcessCategoryClick(it)) },
       onAddTransactionClick = { viewModel.onEvent(AddTransactionEvent.AddTransaction(it)) },
+      onDismissError = { viewModel.onEvent(AddTransactionEvent.DismissError) },
       onNavigateBackClick = {
         focusManager.clearFocus(force = true)
         onNavigateBackClick()
@@ -92,7 +93,13 @@ private fun AddTransactionScreen(
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
 
-  // TODO - Add error snackbar
+  state.errorMessage?.let {
+    val message = it.string()
+    LaunchedEffect(it) {
+      snackbarHostState.showSnackbar(message)
+      actions.onDismissError()
+    }
+  }
 
   Scaffold(
     modifier = modifier,

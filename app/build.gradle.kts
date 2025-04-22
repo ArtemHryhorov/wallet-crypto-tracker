@@ -63,6 +63,10 @@ dependencies {
     implementation(libs.room.paging)
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.negotiation)
+    implementation(libs.ktor.client.serialization)
 
     ksp(libs.hilt.compiler)
     ksp(libs.room.compiler)

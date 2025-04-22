@@ -27,6 +27,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -68,6 +69,7 @@ fun BalanceRoute(
       onTopUpValueChange = { viewModel.onEvent(BalanceEvent.ValidateTopUpValue(it)) },
       onTopUpConfirm = { viewModel.onEvent(BalanceEvent.TopUpBalance(it)) },
       onTopUpDismiss = { viewModel.onEvent(BalanceEvent.DismissTopUpDialog) },
+      onDismissError = { viewModel.onEvent(BalanceEvent.DismissError) },
       onAddTransactionClick = onAddTransactionClick,
     ),
     modifier = modifier,
@@ -83,7 +85,13 @@ private fun BalanceScreen(
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
 
-  // TODO - Add error snackbar
+  state.errorMessage?.let {
+    val message = it.string()
+    LaunchedEffect(it) {
+      snackbarHostState.showSnackbar(message)
+      actions.onDismissError()
+    }
+  }
 
   if (state.showTopUpDialog) {
     TopUpDialog(
@@ -134,7 +142,7 @@ private fun BalanceScreenContent(
       .padding(horizontal = 16.dp),
     horizontalAlignment = Alignment.End,
   ) {
-    ExchangeRate()
+    ExchangeRate(btcRate = state.btcRate)
     Spacer(modifier = Modifier.height(12.dp))
     UserBalanceCard(
       balance = state.balance,
@@ -167,11 +175,16 @@ private fun BalanceScreenContent(
 
 @Composable
 private fun ExchangeRate(
+  btcRate: String?,
   modifier: Modifier = Modifier,
 ) {
   Text(
     modifier = modifier,
-    text = "1 BTC = 87108.93 USD",
+    text = btcRate?.let {
+      "1 BTC = $btcRate USD"
+    } ?: run {
+      stringResource(R.string.btc_rate_error_message)
+    },
     style = MaterialTheme.typography.bodyMedium,
     color = MaterialTheme.colorScheme.onSurface,
   )

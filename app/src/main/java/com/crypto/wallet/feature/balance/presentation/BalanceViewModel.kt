@@ -12,6 +12,7 @@ import com.crypto.wallet.feature.balance.domain.usecase.CreateUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmount
 import com.crypto.wallet.feature.balance.domain.usecase.ChangeBalance
+import com.crypto.wallet.feature.balance.domain.usecase.GetBtcRate
 import com.crypto.wallet.feature.balance.presentation.mapper.toAmountUiModel
 import com.crypto.wallet.feature.transaction.domain.model.CreateTransactionInput
 import com.crypto.wallet.feature.transaction.domain.model.TransactionType
@@ -40,6 +41,7 @@ class BalanceViewModel @Inject constructor(
   @IoDispatcher private val dispatcher: CoroutineDispatcher,
   getAllTransactions: GetAllTransactions,
   private val getUserBalance: GetUserBalance,
+  private val getBtcRate: GetBtcRate,
   private val isValidAmount: IsValidAmount,
   private val changeBalance: ChangeBalance,
   private val createUserBalance: CreateUserBalance,
@@ -64,6 +66,7 @@ class BalanceViewModel @Inject constructor(
 
   init {
     observeUserBalance()
+    observeBitcoinRate()
   }
 
   fun onEvent(event: BalanceEvent) {
@@ -72,7 +75,35 @@ class BalanceViewModel @Inject constructor(
       BalanceEvent.DismissTopUpDialog -> dismissTopUpDialog()
       is BalanceEvent.TopUpBalance -> topUpUserBalance(event.amount)
       is BalanceEvent.ValidateTopUpValue -> validateTopUpValue(event.value)
+      BalanceEvent.DismissError -> dismissError()
     }
+  }
+
+  private fun observeBitcoinRate() {
+    getBtcRate()
+      .onEach { result ->
+        result.fold(
+          onSuccess = { rate ->
+            mutableState.update {
+              it.copy(btcRate = rate)
+            }
+          },
+          onFailure = { error ->
+            Log.e("BalanceViewModel", "observeUserBalance: ", error)
+            when (error) {
+              is NoSuchElementException -> {
+                // Rate not fetched yet
+              }
+              else -> {
+                mutableState.update {
+                  it.copy(errorMessage = TextUiModel(R.string.general_error_message))
+                }
+              }
+            }
+          }
+        )
+      }
+      .launchIn(viewModelScope)
   }
 
   private fun observeUserBalance() {
@@ -85,7 +116,7 @@ class BalanceViewModel @Inject constructor(
             }
           },
           onFailure = { error ->
-            Log.e("BalanceViewModel", "observeUserBalance: Failed to load", error)
+            Log.e("BalanceViewModel", "observeUserBalance: ", error)
             when (error) {
               is NoSuchElementException -> createUserBalance()
               else -> mutableState.update {
@@ -153,6 +184,12 @@ class BalanceViewModel @Inject constructor(
         isTopUpDialogValueValid = isValidAmount(amount),
         topUpDialogValue = amount,
       )
+    }
+  }
+
+  private fun dismissError() {
+    mutableState.update {
+      it.copy(errorMessage = null)
     }
   }
 }

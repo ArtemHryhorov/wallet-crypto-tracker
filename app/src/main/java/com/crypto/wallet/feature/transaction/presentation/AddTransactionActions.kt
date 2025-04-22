@@ -6,6 +6,7 @@ data class AddTransactionActions(
   val onValueChange: (String) -> Unit,
   val onCategoryClick: (CategoryUiModel) -> Unit,
   val onAddTransactionClick: (Double) -> Unit,
+  val onDismissError: () -> Unit,
   val onNavigateBackClick: () -> Unit,
 ) {
   companion object {
@@ -13,6 +14,7 @@ data class AddTransactionActions(
       onValueChange = {},
       onCategoryClick = {},
       onAddTransactionClick = {},
+      onDismissError = {},
       onNavigateBackClick = {},
     )
   }

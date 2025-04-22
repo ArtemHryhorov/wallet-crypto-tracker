@@ -5,4 +5,5 @@ sealed interface BalanceEvent {
   data class ValidateTopUpValue(val value: String) : BalanceEvent
   data class TopUpBalance(val amount: Double) : BalanceEvent
   data object DismissTopUpDialog : BalanceEvent
+  data object DismissError : BalanceEvent
 }
