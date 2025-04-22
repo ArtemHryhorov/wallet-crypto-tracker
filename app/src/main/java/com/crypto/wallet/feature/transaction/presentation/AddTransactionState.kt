@@ -8,6 +8,7 @@ data class AddTransactionState(
   val inputValue: String,
   val allCategories: List<CategoryUiModel>,
   val selectedCategory: CategoryUiModel?,
+  val userBalance: Double,
   val errorMessage: TextUiModel?,
   val transactionAdded: Unit?,
 ) {
@@ -20,6 +21,7 @@ data class AddTransactionState(
       inputValue = "",
       allCategories = emptyList(),
       selectedCategory = null,
+      userBalance = 0.0,
       errorMessage = null,
       transactionAdded = null,
     )

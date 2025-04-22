@@ -10,8 +10,8 @@ import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalanceUseCase
 import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmount
 import com.crypto.wallet.feature.balance.domain.usecase.IsValidAmountUseCase
-import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalance
-import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalanceUseCase
+import com.crypto.wallet.feature.balance.domain.usecase.ChangeBalance
+import com.crypto.wallet.feature.balance.domain.usecase.ChangeBalanceUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -28,8 +28,8 @@ interface BalanceModule {
 
   @Binds
   fun bindTopUpBalance(
-    useCase: TopUpBalanceUseCase
-  ): TopUpBalance
+    useCase: ChangeBalanceUseCase
+  ): ChangeBalance
 
   @Binds
   fun bindCreateUserBalance(

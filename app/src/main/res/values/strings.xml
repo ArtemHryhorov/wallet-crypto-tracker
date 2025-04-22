@@ -22,6 +22,7 @@
     <string name="category_other">Other</string>
     <string name="back">Back</string>
     <string name="transaction_validation_error_message">Must be greater than 0\nMust be ≤ 100,000\nMust have no more than 5 decimal places\nMake sure your balance is sufficient</string>
+    <string name="failed_to_load_transactions_error_message">Failed to load more transactions</string>
 
     <!--  Top Up Dialog  -->
     <string name="confirm">Confirm</string>

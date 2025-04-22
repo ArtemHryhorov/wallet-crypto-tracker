@@ -14,7 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,16 +37,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.crypto.wallet.R
 import com.crypto.wallet.feature.balance.presentation.model.AmountUiModel
 import com.crypto.wallet.feature.balance.presentation.top.up.TopUpDialog
 import com.crypto.wallet.feature.transaction.presentation.model.TransactionTypeUiModel
 import com.crypto.wallet.feature.transaction.presentation.model.TransactionUiModel
-import com.crypto.wallet.feature.transaction.presentation.model.TransactionsByDateUiModel
-import com.crypto.wallet.ui.common.TextUiModel
 import com.crypto.wallet.ui.common.string
 import com.crypto.wallet.ui.theme.Color
 import com.crypto.wallet.ui.theme.CryptoWalletTheme
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun BalanceRoute(
@@ -54,7 +58,10 @@ fun BalanceRoute(
   viewModel: BalanceViewModel = hiltViewModel(),
 ) {
   val state by viewModel.state.collectAsStateWithLifecycle()
+  val transactions = viewModel.pagedTransactions.collectAsLazyPagingItems()
+
   BalanceScreen(
+    transactions = transactions,
     state = state,
     actions = BalanceActions(
       onShowTopUpDialogClick = { viewModel.onEvent(BalanceEvent.ShowTopUpDialog) },
@@ -69,6 +76,7 @@ fun BalanceRoute(
 
 @Composable
 private fun BalanceScreen(
+  transactions: LazyPagingItems<TransactionUiModel>,
   state: BalanceState,
   actions: BalanceActions,
   modifier: Modifier = Modifier,
@@ -104,6 +112,7 @@ private fun BalanceScreen(
   ) { paddingValues ->
     Surface(color = MaterialTheme.colorScheme.background) {
       BalanceScreenContent(
+        transactions = transactions,
         state = state,
         actions = actions,
         modifier = Modifier.padding(paddingValues),
@@ -114,6 +123,7 @@ private fun BalanceScreen(
 
 @Composable
 private fun BalanceScreenContent(
+  transactions: LazyPagingItems<TransactionUiModel>,
   state: BalanceState,
   actions: BalanceActions,
   modifier: Modifier = Modifier,
@@ -150,7 +160,7 @@ private fun BalanceScreenContent(
     Spacer(modifier = Modifier.height(8.dp))
     TransactionsList(
       modifier = Modifier.fillMaxWidth(),
-      transactionsByDate = state.transactions,
+      transactions = transactions,
     )
   }
 }
@@ -227,47 +237,54 @@ private fun UserBalanceCard(
 
 @Composable
 private fun TransactionsList(
-  transactionsByDate: List<TransactionsByDateUiModel>,
   modifier: Modifier = Modifier,
+  transactions: LazyPagingItems<TransactionUiModel>,
 ) {
-  LazyColumn(modifier = modifier) {
-    items(transactionsByDate) { transactions ->
-      GroupedTransactionItem(transactions)
-    }
-  }
-}
+  val grouped = transactions.itemSnapshotList.items
+    .groupBy { it.creationDate }
+    .toSortedMap(compareByDescending { it })
 
-@Composable
-private fun GroupedTransactionItem(
-  transactionsByDate: TransactionsByDateUiModel,
-  modifier: Modifier = Modifier,
-) {
-  Column(modifier = modifier) {
-    Text(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(end = 8.dp),
-      text = transactionsByDate.date,
-      textAlign = TextAlign.End,
-      style = MaterialTheme.typography.labelMedium,
-    )
-    Spacer(modifier = Modifier.height(4.dp))
-    Card(
-      modifier = Modifier.fillMaxWidth()
-    ) {
-      transactionsByDate.transactions.forEach { transaction ->
+  LazyColumn(modifier = modifier) {
+    grouped.forEach { (date, transactions) ->
+      item {
+        Text(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 8.dp),
+          text = date,
+          textAlign = TextAlign.End,
+          style = MaterialTheme.typography.labelMedium,
+        )
+      }
+      itemsIndexed(transactions) { index, transaction ->
         TransactionItem(
-          modifier = Modifier.fillMaxWidth(),
           transaction = transaction,
+          isFirst = index == 0,
+          isLast = index == transactions.lastIndex,
         )
       }
     }
-    Spacer(modifier = Modifier.height(16.dp))
+
+    when (transactions.loadState.append) {
+      is LoadState.Loading -> item {
+        CircularProgressIndicator(
+          modifier = Modifier.padding(16.dp),
+        )
+      }
+      is LoadState.Error -> item {
+        Text(text = stringResource(R.string.failed_to_load_transactions_error_message))
+      }
+      is LoadState.NotLoading -> {
+        // Nothing
+      }
+    }
   }
 }
 
 @Composable
 private fun TransactionItem(
+  isFirst: Boolean,
+  isLast: Boolean,
   transaction: TransactionUiModel,
   modifier: Modifier = Modifier,
 ) {
@@ -275,13 +292,22 @@ private fun TransactionItem(
     is TransactionTypeUiModel.Outcome -> {
       if (isSystemInDarkTheme()) Color.DarkOutcome else Color.LightOutcome
     }
+
     is TransactionTypeUiModel.Income -> {
       if (isSystemInDarkTheme()) Color.DarkIncome else Color.LightIncome
     }
   }
   Row(
     modifier = modifier
-      .background(color = backgroundColor)
+      .background(
+        color = backgroundColor,
+        shape = RoundedCornerShape(
+          topStart = if (isFirst) 16.dp else 0.dp,
+          topEnd = if (isFirst) 16.dp else 0.dp,
+          bottomStart = if (isLast) 16.dp else 0.dp,
+          bottomEnd = if (isLast) 16.dp else 0.dp,
+        )
+      )
       .padding(horizontal = 12.dp)
       .padding(vertical = 6.dp),
     verticalAlignment = Alignment.CenterVertically,
@@ -314,46 +340,18 @@ private fun TransactionItem(
 @Composable
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-fun PreviewBalanceScreen() {
-  CryptoWalletTheme {
-    BalanceScreen(
-      state = BalanceState.loading.copy(
-        balance = AmountUiModel(value = TextUiModel("2.56246 BTC")),
-        transactions = listOf(
-          TransactionsByDateUiModel(
-            date = "2025-04-24",
-            transactions = listOf(
-              TransactionUiModel(
-                creationDate = "12:17:26",
-                type = TransactionTypeUiModel.Outcome(
-                  text = TextUiModel("Taxi")
-                ),
-                amount = AmountUiModel(value = TextUiModel("150.00000 BTC")),
-              ),
-              TransactionUiModel(
-                creationDate = "12:15:26",
-                type = TransactionTypeUiModel.Income(
-                  text = TextUiModel("Income")
-                ),
-                amount = AmountUiModel(value = TextUiModel("34.23531 BTC")),
-              ),
-            )
-          ),
-        )
-      ),
-      actions = BalanceActions.Empty,
-    )
-  }
-}
-
-@Composable
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun PreviewBalanceScreenLoading() {
   CryptoWalletTheme {
     BalanceScreen(
       state = BalanceState.loading,
       actions = BalanceActions.Empty,
+      transactions = previewPagingItems(),
     )
   }
+}
+
+@Composable
+fun previewPagingItems(): LazyPagingItems<TransactionUiModel> {
+  val pagingFlow = remember { flowOf(PagingData.from(emptyList<TransactionUiModel>())) }
+  return pagingFlow.collectAsLazyPagingItems()
 }
