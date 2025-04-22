@@ -1,13 +1,20 @@
 package com.crypto.wallet.feature.balance.presentation
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,14 +37,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crypto.wallet.R
-import com.crypto.wallet.feature.balance.presentation.model.BalanceUiModel
+import com.crypto.wallet.feature.balance.presentation.model.AmountUiModel
 import com.crypto.wallet.feature.balance.presentation.top.up.TopUpDialog
+import com.crypto.wallet.feature.transaction.presentation.model.TransactionTypeUiModel
+import com.crypto.wallet.feature.transaction.presentation.model.TransactionUiModel
+import com.crypto.wallet.feature.transaction.presentation.model.TransactionsByDateUiModel
 import com.crypto.wallet.ui.common.TextUiModel
 import com.crypto.wallet.ui.common.string
+import com.crypto.wallet.ui.theme.Color
 import com.crypto.wallet.ui.theme.CryptoWalletTheme
 
 @Composable
 fun BalanceRoute(
+  onAddTransactionClick: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: BalanceViewModel = hiltViewModel(),
 ) {
@@ -49,6 +61,7 @@ fun BalanceRoute(
       onTopUpValueChange = { viewModel.onEvent(BalanceEvent.ValidateTopUpValue(it)) },
       onTopUpConfirm = { viewModel.onEvent(BalanceEvent.TopUpBalance(it)) },
       onTopUpDismiss = { viewModel.onEvent(BalanceEvent.DismissTopUpDialog) },
+      onAddTransactionClick = onAddTransactionClick,
     ),
     modifier = modifier,
   )
@@ -61,6 +74,8 @@ private fun BalanceScreen(
   modifier: Modifier = Modifier,
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
+
+  // TODO - Add error snackbar
 
   if (state.showTopUpDialog) {
     TopUpDialog(
@@ -77,7 +92,7 @@ private fun BalanceScreen(
     topBar = {
       Text(
         modifier = Modifier.fillMaxWidth(),
-        text = stringResource(R.string.wallet_top_bar),
+        text = stringResource(R.string.balance_top_bar),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.titleLarge,
       )
@@ -116,6 +131,27 @@ private fun BalanceScreenContent(
       onTopUpClick = actions.onShowTopUpDialogClick,
       modifier = Modifier.fillMaxWidth(),
     )
+    Spacer(modifier = Modifier.height(24.dp))
+    Text(
+      modifier = Modifier.fillMaxWidth(),
+      text = stringResource(R.string.transactions_history),
+      textAlign = TextAlign.Center,
+      style = MaterialTheme.typography.titleLarge,
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Button(
+      modifier = Modifier
+        .align(Alignment.End)
+        .padding(end = 16.dp),
+      onClick = actions.onAddTransactionClick,
+    ) {
+      Text(text = stringResource(R.string.add_transaction))
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+    TransactionsList(
+      modifier = Modifier.fillMaxWidth(),
+      transactionsByDate = state.transactions,
+    )
   }
 }
 
@@ -133,7 +169,7 @@ private fun ExchangeRate(
 
 @Composable
 private fun UserBalanceCard(
-  balance: BalanceUiModel?,
+  balance: AmountUiModel?,
   onTopUpClick: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -154,7 +190,7 @@ private fun UserBalanceCard(
       ) {
         Text(
           modifier = Modifier.fillMaxWidth(),
-          text = balance.amount.string(),
+          text = balance.value.string(),
           textAlign = TextAlign.Start,
           style = MaterialTheme.typography.displaySmall
         )
@@ -190,13 +226,120 @@ private fun UserBalanceCard(
 }
 
 @Composable
+private fun TransactionsList(
+  transactionsByDate: List<TransactionsByDateUiModel>,
+  modifier: Modifier = Modifier,
+) {
+  LazyColumn(modifier = modifier) {
+    items(transactionsByDate) { transactions ->
+      GroupedTransactionItem(transactions)
+    }
+  }
+}
+
+@Composable
+private fun GroupedTransactionItem(
+  transactionsByDate: TransactionsByDateUiModel,
+  modifier: Modifier = Modifier,
+) {
+  Column(modifier = modifier) {
+    Text(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(end = 8.dp),
+      text = transactionsByDate.date,
+      textAlign = TextAlign.End,
+      style = MaterialTheme.typography.labelMedium,
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Card(
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      transactionsByDate.transactions.forEach { transaction ->
+        TransactionItem(
+          modifier = Modifier.fillMaxWidth(),
+          transaction = transaction,
+        )
+      }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+  }
+}
+
+@Composable
+private fun TransactionItem(
+  transaction: TransactionUiModel,
+  modifier: Modifier = Modifier,
+) {
+  val backgroundColor = when (transaction.type) {
+    is TransactionTypeUiModel.Outcome -> {
+      if (isSystemInDarkTheme()) Color.DarkOutcome else Color.LightOutcome
+    }
+    is TransactionTypeUiModel.Income -> {
+      if (isSystemInDarkTheme()) Color.DarkIncome else Color.LightIncome
+    }
+  }
+  Row(
+    modifier = modifier
+      .background(color = backgroundColor)
+      .padding(horizontal = 12.dp)
+      .padding(vertical = 6.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Text(
+      modifier = Modifier.weight(1f),
+      text = transaction.amount.value.string(),
+      textAlign = TextAlign.Start,
+      style = MaterialTheme.typography.titleLarge,
+    )
+    Spacer(modifier = Modifier.width(16.dp))
+    Column(
+      verticalArrangement = Arrangement.SpaceBetween,
+      horizontalAlignment = Alignment.End,
+    ) {
+      Text(
+        text = transaction.type.value.string(),
+        textAlign = TextAlign.End,
+        style = MaterialTheme.typography.labelLarge,
+      )
+      Spacer(modifier = Modifier.height(12.dp))
+      Text(
+        text = transaction.creationDate,
+        style = MaterialTheme.typography.labelLarge,
+      )
+    }
+  }
+}
+
+@Composable
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun PreviewBalanceScreen() {
   CryptoWalletTheme {
     BalanceScreen(
       state = BalanceState.loading.copy(
-        balance = BalanceUiModel(amount = TextUiModel("2.56246 BTC")),
+        balance = AmountUiModel(value = TextUiModel("2.56246 BTC")),
+        transactions = listOf(
+          TransactionsByDateUiModel(
+            date = "2025-04-24",
+            transactions = listOf(
+              TransactionUiModel(
+                creationDate = "12:17:26",
+                type = TransactionTypeUiModel.Outcome(
+                  text = TextUiModel("Taxi")
+                ),
+                amount = AmountUiModel(value = TextUiModel("150.00000 BTC")),
+              ),
+              TransactionUiModel(
+                creationDate = "12:15:26",
+                type = TransactionTypeUiModel.Income(
+                  text = TextUiModel("Income")
+                ),
+                amount = AmountUiModel(value = TextUiModel("34.23531 BTC")),
+              ),
+            )
+          ),
+        )
       ),
       actions = BalanceActions.Empty,
     )
