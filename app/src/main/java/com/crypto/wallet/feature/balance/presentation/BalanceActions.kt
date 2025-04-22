@@ -5,6 +5,7 @@ data class BalanceActions(
   val onTopUpValueChange: (String) -> Unit,
   val onTopUpConfirm: (Double) -> Unit,
   val onTopUpDismiss: () -> Unit,
+  val onAddTransactionClick: () -> Unit,
 ) {
   companion object {
     val Empty = BalanceActions(
@@ -12,6 +13,7 @@ data class BalanceActions(
       onTopUpValueChange = {},
       onTopUpConfirm = {},
       onTopUpDismiss = {},
+      onAddTransactionClick = {},
     )
   }
 }

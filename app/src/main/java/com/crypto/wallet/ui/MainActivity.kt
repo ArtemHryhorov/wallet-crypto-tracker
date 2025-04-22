@@ -46,8 +46,11 @@ class MainActivity : ComponentActivity() {
             startDestination = Destination.Balance,
             modifier = Modifier.fillMaxSize(),
           ) {
+            // TODO - Navigate to Add Transaction
             composable<Destination.Balance> {
-              BalanceRoute()
+              BalanceRoute(
+                onAddTransactionClick = {},
+              )
             }
           }
         }

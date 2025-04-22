@@ -5,8 +5,19 @@
     <string name="general_error_message">Something went wrong</string>
 
     <!--  Wallet  -->
-    <string name="wallet_top_bar">Wallet</string>
+    <string name="balance_top_bar">Balance</string>
     <string name="top_up_balance">Top Up Balance</string>
+    <string name="transactions_history">Transactions History</string>
+    <string name="add_transaction">Add Transaction</string>
+
+    <!--  Transaction  -->
+    <string name="income">Income</string>
+    <string name="outcome">Outcome</string>
+    <string name="category_groceries">Groceries</string>
+    <string name="category_taxi">Taxi</string>
+    <string name="category_electronics">Electronics</string>
+    <string name="category_restaurant">Restaurant</string>
+    <string name="category_other">Other</string>
 
     <!--  Top Up Dialog  -->
     <string name="confirm">Confirm</string>

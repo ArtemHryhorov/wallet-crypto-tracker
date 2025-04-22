@@ -9,7 +9,9 @@ import com.crypto.wallet.feature.balance.domain.usecase.CreateUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.GetUserBalance
 import com.crypto.wallet.feature.balance.domain.usecase.IsValidTopUpAmount
 import com.crypto.wallet.feature.balance.domain.usecase.TopUpBalance
-import com.crypto.wallet.feature.balance.presentation.model.BalanceUiModel
+import com.crypto.wallet.feature.balance.presentation.mapper.toAmountUiModel
+import com.crypto.wallet.feature.transaction.domain.usecase.GetTransactions
+import com.crypto.wallet.feature.transaction.presentation.mapper.toUiModelList
 import com.crypto.wallet.ui.common.TextUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -29,12 +31,14 @@ class BalanceViewModel @Inject constructor(
   private val isValidTopUpAmount: IsValidTopUpAmount,
   private val topUpBalance: TopUpBalance,
   private val createUserBalance: CreateUserBalance,
+  private val getTransactions: GetTransactions,
 ) : ViewModel() {
   private val mutableState = MutableStateFlow(BalanceState.loading)
   val state: StateFlow<BalanceState> = mutableState.asStateFlow()
 
   init {
-    fetchUserBalance()
+    observeUserBalance()
+    observeUserTransactions()
   }
 
   fun onEvent(event: BalanceEvent) {
@@ -46,23 +50,44 @@ class BalanceViewModel @Inject constructor(
     }
   }
 
-  private fun fetchUserBalance() {
+  private fun observeUserBalance() {
     getUserBalance()
       .onEach { balanceResult ->
         balanceResult.fold(
           onSuccess = { balance ->
             mutableState.update {
-              it.copy(balance = BalanceUiModel.from(balance))
+              it.copy(balance = balance.value.toAmountUiModel())
             }
           },
           onFailure = { error ->
-            Log.e("BalanceViewModel", "fetchUserBalance: Failed to load", error)
+            Log.e("BalanceViewModel", "observeUserBalance: Failed to load", error)
             // TODO - Add NoInternetConnection handling
             when (error) {
               is NoSuchElementException -> createUserBalance()
               else -> mutableState.update {
                 it.copy(errorMessage = TextUiModel(R.string.general_error_message))
               }
+            }
+          },
+        )
+      }
+      .launchIn(viewModelScope)
+  }
+
+  private fun observeUserTransactions() {
+    getTransactions()
+      .onEach { transactionsResult ->
+        transactionsResult.fold(
+          onSuccess = { transactions ->
+            mutableState.update {
+              it.copy(transactions = transactions.toUiModelList())
+            }
+          },
+          onFailure = { error ->
+            Log.e("BalanceViewModel", "observeUserTransactions: Failed to load", error)
+            // TODO - Add NoInternetConnection handling
+            mutableState.update {
+              it.copy(errorMessage = TextUiModel(R.string.general_error_message))
             }
           },
         )
