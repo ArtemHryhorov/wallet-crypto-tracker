@@ -21,6 +21,10 @@ ksp = "2.0.21-1.0.25"
 room = "2.7.0"
 paging = "3.2.1"
 ktor = "3.1.2"
+mockk = "1.13.8"
+coroutines = "1.7.3"
+turbine = "1.0.0"
+slf4jAndroid = "1.7.36"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +54,11 @@ room-paging = { group = "androidx.room", name = "room-paging", version.ref = "ro
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+slf4j-android = { module = "org.slf4j:slf4j-android", version.ref = "slf4jAndroid" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

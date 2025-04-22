@@ -6,8 +6,6 @@ import com.crypto.wallet.feature.transaction.domain.model.TransactionType
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
-// TODO - Add Unit tests
-
 class ChangeBalanceUseCase @Inject constructor(
   private val repository: BalanceRepository,
 ) : ChangeBalance {
